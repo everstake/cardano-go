@@ -122,17 +122,17 @@ type TxBody struct {
 	Fee     Coin        `cbor:"2,keyasint"`
 
 	// Optionals
-	TTL                   Uint64        `cbor:"3,keyasint,omitempty"`
-	Certificates          []Certificate `cbor:"4,keyasint,omitempty"`
-	Withdrawals           interface{}   `cbor:"5,keyasint,omitempty"` // unsupported
-	Update                interface{}   `cbor:"6,keyasint,omitempty"` // unsupported
-	AuxiliaryDataHash     *Hash32       `cbor:"7,keyasint,omitempty"`
-	ValidityIntervalStart Uint64        `cbor:"8,keyasint,omitempty"`
-	Mint                  *Mint         `cbor:"9,keyasint,omitempty"`
-	ScriptDataHash        *Hash32       `cbor:"10,keyasint,omitempty"`
-	Collateral            []TxInput     `cbor:"11,keyasint,omitempty"`
-	RequiredSigners       []AddrKeyHash `cbor:"12,keyasint,omitempty"`
-	NetworkID             Uint64        `cbor:"13,keyasint,omitempty"`
+	TTL                   Uint64                  `cbor:"3,keyasint,omitempty"`
+	Certificates          []Certificate           `cbor:"4,keyasint,omitempty"`
+	Withdrawals           map[*crypto.PubKey]Coin `cbor:"5,keyasint,omitempty"`
+	Update                interface{}             `cbor:"6,keyasint,omitempty"` // unsupported
+	AuxiliaryDataHash     *Hash32                 `cbor:"7,keyasint,omitempty"`
+	ValidityIntervalStart Uint64                  `cbor:"8,keyasint,omitempty"`
+	Mint                  *Mint                   `cbor:"9,keyasint,omitempty"`
+	ScriptDataHash        *Hash32                 `cbor:"10,keyasint,omitempty"`
+	Collateral            []TxInput               `cbor:"11,keyasint,omitempty"`
+	RequiredSigners       []AddrKeyHash           `cbor:"12,keyasint,omitempty"`
+	NetworkID             Uint64                  `cbor:"13,keyasint,omitempty"`
 }
 
 // Hash returns the transaction body hash using blake2b256.

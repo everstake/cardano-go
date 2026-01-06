@@ -58,6 +58,13 @@ func (tb *TxBuilder) AddCertificate(cert Certificate) {
 	tb.tx.Body.Certificates = append(tb.tx.Body.Certificates, cert)
 }
 
+func (tb *TxBuilder) AddWithdrawal(stakeAddr crypto.PubKey, amount Coin) {
+	if tb.tx.Body.Withdrawals == nil {
+		tb.tx.Body.Withdrawals = make(map[*crypto.PubKey]Coin)
+	}
+	tb.tx.Body.Withdrawals[&stakeAddr] = amount
+}
+
 // AddNativeScript adds a native script to the transaction.
 func (tb *TxBuilder) AddNativeScript(script NativeScript) {
 	tb.tx.WitnessSet.Scripts = append(tb.tx.WitnessSet.Scripts, script)
@@ -81,6 +88,9 @@ func (tb *TxBuilder) calculateAmounts() (*Value, *Value) {
 	}
 	for _, out := range tb.tx.Body.Outputs {
 		output = output.Add(out.Amount)
+	}
+	for _, withdrawal := range tb.tx.Body.Withdrawals {
+		input = input.Add(NewValue(withdrawal))
 	}
 	if tb.tx.Body.Mint != nil {
 		input = input.Add(NewValueWithAssets(0, tb.tx.Body.Mint.MultiAsset()))
@@ -203,8 +213,13 @@ func (tb *TxBuilder) addChangeIfNeeded(inputAmount, outputAmount *Value) error {
 		return err
 	}
 
+	totalWithdrawals := NewValue(0)
+	for _, w := range tb.tx.Body.Withdrawals {
+		totalWithdrawals = totalWithdrawals.Add(NewValue(w))
+	}
+
 	minFee := tb.calculateMinFee()
-	outputAmount = outputAmount.Add(NewValue(minFee))
+	outputAmount = outputAmount.Add(NewValue(minFee)).Add(totalWithdrawals)
 
 	if inputOutputCmp := inputAmount.Cmp(outputAmount); inputOutputCmp == -1 || inputOutputCmp == 2 {
 		return fmt.Errorf(
